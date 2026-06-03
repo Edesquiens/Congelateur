@@ -498,7 +498,7 @@ function addItem() {
   input.focus();
 }
 
-window.changeQty = function(id, delta) {
+function changeQty(id, delta) {
   const item = items[id];
   if (!item) return;
   const newQty = Math.max(0, item.qty + delta);
@@ -507,19 +507,19 @@ window.changeQty = function(id, delta) {
   if (el) { el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
 };
 
-window.deleteItem = function(id) {
+function deleteItem(id) {
   const item = items[id];
   remove(ref(db, 'items/' + id));
   if (item) showToast(item.name + ' supprimé');
 };
 
-window.setFilter = function(f) {
+function setFilter(f) {
   activeFilter = f;
   renderFilterBar();
   renderList();
 };
 
-window.selectCat = function(c) {
+function selectCat(c) {
   selectedCat = c;
   renderCatPicker();
 };
@@ -608,6 +608,13 @@ function showToast(msg) {
 function esc(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
+
+// Expose functions to global scope for onclick handlers
+window.addItem = addItem;
+window.changeQty = changeQty;
+window.deleteItem = deleteItem;
+window.setFilter = setFilter;
+window.selectCat = selectCat;
 
 renderCatPicker();
 </script>
