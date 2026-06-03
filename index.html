@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>🧊 Mon Congélateur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ice: #e8f4fd;
+    --ice-mid: #b8ddf5;
+    --blue: #1a6fb5;
+    --blue-dark: #0d4a82;
+    --frost: #f0f8ff;
+    --text: #1a2332;
+    --text-muted: #5a7080;
+    --border: rgba(26,111,181,0.15);
+    --card: #ffffff;
+    --bg: #f0f7ff;
+    --success: #0f7e5a;
+    --success-bg: #e6f5ef;
+    --danger: #c0392b;
+    --danger-bg: #fdf0ee;
+    --warn: #b45309;
+    --warn-bg: #fef3e2;
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 2rem;
+  }
+
+  /* Subtle ice crystal background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(184,221,245,0.3) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(184,221,245,0.2) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 480px; margin: 0 auto; padding: 0 16px; position: relative; z-index: 1; }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 2rem 0 1.25rem;
+  }
+  .header-icon {
+    font-size: 52px;
+    display: block;
+    margin-bottom: 10px;
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+  .header h1 {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--blue-dark);
+    letter-spacing: -0.5px;
+  }
+  .header p {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* Stats */
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin: 1rem 0;
+  }
+  .stat {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 10px;
+    text-align: center;
+  }
+  .stat-val {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--blue-dark);
+    line-height: 1;
+  }
+  .stat-val.warn { color: var(--warn); }
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Add section */
+  .add-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin: 1rem 0;
+    box-shadow: 0 2px 12px rgba(26,111,181,0.08);
+  }
+  .add-card h2 {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--blue-dark);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .input-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .input-row input {
+    flex: 1;
+    height: 44px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--frost);
+    color: var(--text);
+    font-size: 15px;
+    font-family: 'DM Sans', sans-serif;
+    padding: 0 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .input-row input:focus { border-color: var(--blue); background: #fff; }
+  .input-row input::placeholder { color: var(--text-muted); }
+  .btn-add {
+    height: 44px;
+    padding: 0 18px;
+    background: var(--blue);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-add:hover { background: var(--blue-dark); }
+  .btn-add:active { transform: scale(0.97); }
+
+  /* Category picker */
+  .cat-picker {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .cat-btn {
+    padding: 5px 11px;
+    border-radius: 99px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 12.5px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .cat-btn.active {
+    background: var(--ice);
+    border-color: var(--blue);
+    color: var(--blue-dark);
+    font-weight: 500;
+  }
+
+  /* Filter tabs */
+  .filter-bar {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    margin: 1rem 0 12px;
+    scrollbar-width: none;
+  }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .filter-tab {
+    padding: 6px 14px;
+    border-radius: 99px;
+    border: 1.5px solid var(--border);
+    background: var(--card);
+    color: var(--text-muted);
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .filter-tab.active {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+    font-weight: 500;
+  }
+
+  /* Items */
+  .items { display: flex; flex-direction: column; gap: 8px; }
+
+  .item-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: border-color 0.15s, transform 0.1s, opacity 0.2s;
+    animation: slideIn 0.2s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .item-card:hover { border-color: var(--ice-mid); }
+  .item-card.zero { opacity: 0.55; }
+
+  .item-emoji { font-size: 26px; flex-shrink: 0; }
+
+  .item-info { flex: 1; min-width: 0; }
+  .item-name {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .item-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+  }
+  .item-cat {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .badge {
+    font-size: 11px;
+    padding: 1px 7px;
+    border-radius: 99px;
+    font-weight: 500;
+  }
+  .badge-low { background: var(--warn-bg); color: var(--warn); }
+  .badge-empty { background: var(--danger-bg); color: var(--danger); }
+
+  /* Qty controls */
+  .qty-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .qty-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    background: var(--frost);
+    color: var(--text);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.12s;
+    font-weight: 400;
+  }
+  .qty-btn:hover { border-color: var(--blue); background: var(--ice); color: var(--blue); }
+  .qty-btn:active { transform: scale(0.88); }
+  .qty-btn.minus:hover { border-color: #e07070; background: var(--danger-bg); color: var(--danger); }
+  .qty-num {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    min-width: 26px;
+    text-align: center;
+    color: var(--blue-dark);
+    transition: transform 0.1s;
+  }
+  .qty-num.bump { animation: bump 0.2s ease; }
+  @keyframes bump { 0%,100%{transform:scale(1)} 50%{transform:scale(1.35)} }
+
+  .btn-del {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    margin-left: 2px;
+  }
+  .btn-del:hover { background: var(--danger-bg); color: var(--danger); }
+
+  /* Empty state */
+  .empty {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    color: var(--text-muted);
+  }
+  .empty-icon { font-size: 44px; display: block; margin-bottom: 12px; opacity: 0.5; }
+  .empty p { font-size: 14px; line-height: 1.6; }
+
+  /* Loading */
+  .loading {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+  .spinner {
+    display: inline-block;
+    width: 24px; height: 24px;
+    border: 2.5px solid var(--ice-mid);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin-bottom: 10px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--blue-dark);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 99px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+    z-index: 100;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* Connection status */
+  .conn-dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #ccc;
+    margin-right: 5px;
+    vertical-align: middle;
+    transition: background 0.3s;
+  }
+  .conn-dot.online { background: #22c55e; }
+  .conn-dot.offline { background: #ef4444; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <span class="header-icon">🧊</span>
+    <h1>Mon congélateur</h1>
+    <p id="conn-status"><span class="conn-dot" id="conn-dot"></span><span id="conn-text">Connexion…</span></p>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-val" id="s-total">–</div>
+      <div class="stat-label">Articles</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" id="s-qty">–</div>
+      <div class="stat-label">Unités</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val warn" id="s-low">–</div>
+      <div class="stat-label">Stocks faibles</div>
+    </div>
+  </div>
+
+  <div class="add-card">
+    <h2>➕ Ajouter un article</h2>
+    <div class="input-row">
+      <input type="text" id="new-item" placeholder="Poulet, saumon, pesto…" maxlength="40" autocomplete="off" />
+      <button class="btn-add" onclick="addItem()">+ Ajouter</button>
+    </div>
+    <div class="cat-picker" id="cat-picker"></div>
+  </div>
+
+  <div class="filter-bar" id="filter-bar"></div>
+
+  <div class="items" id="items-list">
+    <div class="loading"><div class="spinner"></div><br>Chargement…</div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, set, remove, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCguWnih0wdyMqx10Ke0XduIT7FwxRgVmQ",
+  authDomain: "congelateur-7413c.firebaseapp.com",
+  databaseURL: "https://congelateur-7413c-default-rtdb.firebaseio.com",
+  projectId: "congelateur-7413c",
+  storageBucket: "congelateur-7413c.firebasestorage.app",
+  messagingSenderId: "472621645749",
+  appId: "1:472621645749:web:be76e872fdd9c0d98463fc"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const itemsRef = ref(db, 'items');
+
+const CATS = [
+  { id: 'viandes',  label: 'Viandes',         emoji: '🥩' },
+  { id: 'poissons', label: 'Poissons',         emoji: '🐟' },
+  { id: 'legumes',  label: 'Légumes',          emoji: '🥦' },
+  { id: 'plats',    label: 'Plats préparés',   emoji: '🍱' },
+  { id: 'pain',     label: 'Pain & pâtes',     emoji: '🥖' },
+  { id: 'desserts', label: 'Desserts',         emoji: '🍨' },
+  { id: 'autre',    label: 'Autre',            emoji: '📦' },
+];
+const CAT_MAP = Object.fromEntries(CATS.map(c => [c.id, c]));
+
+let items = {};
+let activeFilter = 'all';
+let selectedCat = 'viandes';
+
+// Connection status
+const connRef = ref(db, '.info/connected');
+onValue(connRef, snap => {
+  const online = snap.val();
+  document.getElementById('conn-dot').className = 'conn-dot ' + (online ? 'online' : 'offline');
+  document.getElementById('conn-text').textContent = online ? 'Synchronisé' : 'Hors ligne';
+});
+
+// Live sync
+onValue(itemsRef, snap => {
+  items = snap.val() || {};
+  render();
+});
+
+function addItem() {
+  const input = document.getElementById('new-item');
+  const name = input.value.trim();
+  if (!name) { input.focus(); return; }
+
+  const existing = Object.entries(items).find(([,v]) => v.name.toLowerCase() === name.toLowerCase());
+  if (existing) {
+    const [id, item] = existing;
+    update(ref(db, 'items/' + id), { qty: item.qty + 1 });
+    showToast('Quantité augmentée pour ' + item.name);
+    input.value = '';
+    return;
+  }
+  const id = Date.now().toString();
+  set(ref(db, 'items/' + id), { id, name, qty: 1, cat: selectedCat, ts: Date.now() });
+  showToast(name + ' ajouté !');
+  input.value = '';
+  input.focus();
+}
+
+window.changeQty = function(id, delta) {
+  const item = items[id];
+  if (!item) return;
+  const newQty = Math.max(0, item.qty + delta);
+  update(ref(db, 'items/' + id), { qty: newQty });
+  const el = document.querySelector(`[data-id="${id}"] .qty-num`);
+  if (el) { el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
+};
+
+window.deleteItem = function(id) {
+  const item = items[id];
+  remove(ref(db, 'items/' + id));
+  if (item) showToast(item.name + ' supprimé');
+};
+
+window.setFilter = function(f) {
+  activeFilter = f;
+  renderFilterBar();
+  renderList();
+};
+
+window.selectCat = function(c) {
+  selectedCat = c;
+  renderCatPicker();
+};
+
+document.getElementById('new-item').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addItem();
+});
+
+function renderCatPicker() {
+  document.getElementById('cat-picker').innerHTML = CATS.map(c =>
+    `<button class="cat-btn${selectedCat === c.id ? ' active' : ''}" onclick="selectCat('${c.id}')">${c.emoji} ${c.label}</button>`
+  ).join('');
+}
+
+function renderFilterBar() {
+  const counts = { all: 0 };
+  CATS.forEach(c => counts[c.id] = 0);
+  Object.values(items).forEach(i => { counts.all++; counts[i.cat] = (counts[i.cat] || 0) + 1; });
+  const tabs = [{ id: 'all', label: 'Tout', emoji: '' }, ...CATS];
+  document.getElementById('filter-bar').innerHTML = tabs.map(c => {
+    const n = counts[c.id] || 0;
+    if (c.id !== 'all' && n === 0) return '';
+    return `<button class="filter-tab${activeFilter === c.id ? ' active' : ''}" onclick="setFilter('${c.id}')">${c.emoji ? c.emoji + ' ' : ''}${c.label}${n ? ` (${n})` : ''}</button>`;
+  }).join('');
+}
+
+function renderList() {
+  const list = Object.values(items)
+    .filter(i => activeFilter === 'all' || i.cat === activeFilter)
+    .sort((a, b) => (b.ts || 0) - (a.ts || 0));
+
+  const el = document.getElementById('items-list');
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><span class="empty-icon">❄️</span><p>Aucun article ici.<br>Ajoutez quelque chose !</p></div>`;
+    return;
+  }
+  el.innerHTML = list.map(item => {
+    const cat = CAT_MAP[item.cat] || CAT_MAP.autre;
+    const badge = item.qty === 0
+      ? `<span class="badge badge-empty">épuisé</span>`
+      : item.qty === 1
+        ? `<span class="badge badge-low">stock faible</span>`
+        : '';
+    return `
+    <div class="item-card${item.qty === 0 ? ' zero' : ''}" data-id="${item.id}">
+      <span class="item-emoji">${cat.emoji}</span>
+      <div class="item-info">
+        <div class="item-name">${esc(item.name)}</div>
+        <div class="item-meta">
+          <span class="item-cat">${cat.label}</span>
+          ${badge}
+        </div>
+      </div>
+      <div class="qty-controls">
+        <button class="qty-btn minus" onclick="changeQty('${item.id}',-1)" aria-label="Diminuer">−</button>
+        <span class="qty-num">${item.qty}</span>
+        <button class="qty-btn" onclick="changeQty('${item.id}',1)" aria-label="Augmenter">+</button>
+        <button class="btn-del" onclick="deleteItem('${item.id}')" aria-label="Supprimer">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderStats() {
+  const all = Object.values(items);
+  document.getElementById('s-total').textContent = all.length;
+  document.getElementById('s-qty').textContent = all.reduce((s, i) => s + i.qty, 0);
+  document.getElementById('s-low').textContent = all.filter(i => i.qty <= 1).length;
+}
+
+function render() {
+  renderStats();
+  renderFilterBar();
+  renderList();
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+renderCatPicker();
+</script>
+</body>
+</html>
